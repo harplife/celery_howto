@@ -84,7 +84,6 @@ def db_test(n):
     if db_conn:
         c = db_conn.cursor()
         c.execute(f'SELECT 421 - 1;')
-        time.sleep(3)
         print(f'the db has answered to Task {n}:' + str(c.fetchone()[0]))
     else:
         print('no datbase connection was found.')
