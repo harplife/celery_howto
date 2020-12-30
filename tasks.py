@@ -4,6 +4,7 @@ import secrets
 import time
 import sqlite3
 from sqlite3 import Error
+import requests
 
 
 app = Celery('tasks', broker='amqp://rabbit_dev')
@@ -87,3 +88,13 @@ def db_test(n):
         print(f'the db has answered to Task {n}:' + str(c.fetchone()[0]))
     else:
         print('no datbase connection was found.')
+
+
+@app.task
+def web_test(n):
+    print(f'Task {n} shall make a request now.')
+    r = requests.get('http://localhost:8080')
+    if r.status_code == 200:
+        print(f'Task {n} API request succeeded!')
+    else:
+        print(f'Task {n} API request FAILED.')
