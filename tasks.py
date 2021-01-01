@@ -7,7 +7,7 @@ from sqlite3 import Error
 import requests
 
 
-app = Celery('tasks', broker='amqp://rabbit_dev')
+app = Celery('tasks', backend='redis://redis_dev',broker='amqp://rabbit_dev')
 
 db_conn = None
 
