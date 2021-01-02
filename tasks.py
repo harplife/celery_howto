@@ -1,5 +1,4 @@
-from celery import Celery
-from celery.signals import worker_process_init, worker_process_shutdown
+from worker import app
 import secrets
 import time
 import sqlite3
@@ -7,36 +6,9 @@ from sqlite3 import Error
 import requests
 
 
-app = Celery('tasks', backend='redis://redis_dev',broker='amqp://rabbit_dev')
-
-db_conn = None
-
-
-@worker_process_init.connect
-def init_worker(**kwargs):
-    global db_conn
-    print('initializing database connection for worker.')
-    try:
-        db_conn = sqlite3.connect('sqlite.db')
-    except Error as e:
-        db_conn = None
-        print(e)
-
-
-@worker_process_shutdown.connect
-def shutdown_worker(**kwargs):
-    global db_conn
-    if db_conn:
-        print('closing database conection for worker.')
-        db_conn.close()
-    else:
-        print('there is no data connection to close.')
-
-
 @app.task
 def add(x, y):
-    result = str(x + y)
-    print(f'added result: {result}')
+    return x + y
 
 
 @app.task
@@ -49,8 +21,8 @@ def subtract(x, y):
     print('awake now')
 
 
-@app.task
-def test(n):
+@app.task(bind=True, name='test')
+def test(self, n):
     print(f'Task {n} shall sleep now.')
     time.sleep(3)
     print(f'Task {n} is now awake!')
@@ -90,8 +62,8 @@ def db_test(n):
         print('no datbase connection was found.')
 
 
-@app.task
-def web_test(n):
+@app.task(bind=True, name='web_test')
+def web_test(self, n):
     print(f'Task {n} shall make a request now.')
     r = requests.get('http://localhost:8080')
     if r.status_code == 200:
