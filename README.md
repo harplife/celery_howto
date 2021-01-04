@@ -566,4 +566,3 @@ def db_call():
 
 TODO
 1. Flower 연동
-2. DB 연결 (worker 초기 설정) 방안 
