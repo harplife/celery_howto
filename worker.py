@@ -7,7 +7,7 @@ from sqlite3 import Error
 import requests
 
 
-app = Celery(__name__)
+app = Celery()
 app.conf.update(
         {
             'broker_url': 'amqp://rabbit_dev',
@@ -25,11 +25,15 @@ app.conf.update(
         }
     )
 
+
 db_conn = None
 
 
 @worker_process_init.connect
 def init_worker(**kwargs):
+    '''
+    This only works on multi-processing.
+    '''
     global db_conn
     print('initializing database connection for worker.')
     try:
@@ -41,6 +45,9 @@ def init_worker(**kwargs):
 
 @worker_process_shutdown.connect
 def shutdown_worker(**kwargs):
+    '''
+    This only works on multi-processing
+    '''
     global db_conn
     if db_conn:
         print('closing database conection for worker.')

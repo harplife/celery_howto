@@ -474,3 +474,4 @@ immutable은 `task.si()`로 간단히 부를 수 있다.
 
 TODO
 1. Flower 연동
+2. DB 연결 (worker 초기 설정) 방안 [참고](https://docs.celeryproject.org/en/latest/userguide/tasks.html#instantiation)
