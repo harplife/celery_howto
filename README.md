@@ -472,4 +472,5 @@ immutable은 `task.si()`로 간단히 부를 수 있다.
 
 # 참고사항
 
-TBD
+TODO
+1. Flower 연동
