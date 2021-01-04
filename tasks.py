@@ -12,6 +12,11 @@ def add(x, y):
 
 
 @app.task
+def mult(x, y):
+    return x * y
+
+
+@app.task
 def subtract(x, y):
     result = str(x - y)
     print('now sleeping')
