@@ -1,4 +1,4 @@
-from worker import app
+from worker import app, DatabaseTask
 import secrets
 import time
 import sqlite3
@@ -31,6 +31,20 @@ def test(self, n):
     print(f'Task {n} shall sleep now.')
     time.sleep(3)
     print(f'Task {n} is now awake!')
+
+
+@app.task(base=DatabaseTask)
+def db_call():
+    print('db_call task is starting')
+    try:
+        c = db_call.db.cursor()
+    except:
+        print('db_call connection failed')
+    else:
+        print('db_call connection cursor is created')
+    finally:
+        c.execute(f'SELECT 210 + 210;')
+        print('db_call select is executed')
 
 
 @app.task

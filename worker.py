@@ -1,4 +1,4 @@
-from celery import Celery
+from celery import Celery, Task
 from celery.signals import worker_process_init, worker_process_shutdown
 import secrets
 import time
@@ -24,6 +24,17 @@ app.conf.update(
             'accept_content': ['json']
         }
     )
+
+
+class DatabaseTask(Task):
+    _db = None
+
+    @property
+    def db(self):
+        if self._db is None:
+            print('Databased connection is now initialized.')
+            self._db = sqlite3.connect('sqlite.db')
+        return self._db
 
 
 db_conn = None
