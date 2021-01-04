@@ -470,8 +470,100 @@ immutable은 `task.si()`로 간단히 부를 수 있다.
 ...    ).apply_async(),
 ```
 
+# DB 컨넥션 설정
+
+이 부분은 좀 더 검토해볼 필요가 있다는 점을 먼저 표기한다.
+이유는, 이 섹션이 미완성일 뿐만이 아니라,
+DB 컨넥션 한 개로서 DB 관련된 모든 Task를 처리할지,
+Task 한개씩 처리할 때마다 DB 컨넥션을 만들어야 할지,
+Stackoverflow 조차도 이 점을 제대로 답변해주지 못 하기 때문이다.
+
+심지어, Celery에서 multi-processing 사용할 때 와, multi-threading을 사용할 때와 상황이 다르니..
+
+일단 참고할 만한 내용은 여기에 정리하되,
+직접 테스트 해보지 않는 이상 그 무엇이 더 낳은 방법이라 할 수가 없다.
+
+## Worker 프로세스 시작 전 DB 컨넥션 설정
+
+이 설정은 Multi-processing을 사용할 경우에만 적용된다.
+
+Celery에서 이 용도로 사용하라고 아주 간편한 기능을 제공해준다.
+
+- `worker_process_init` : 초기에 worker process가 시작될 시 실행되는 부분.
+  Task가 시작되기 전이 아닌, worker가 시작되며 process들이 준비가 될 때를 말한다.
+- `worker_process_shutdown` : worker process가 종료될 시 실행되는 부분
+  Task가 종료될 때가 아닌, worker가 종료되며 process들도 종료될 때를 말한다.
+
+예시 코드:
+
+```python
+# worker.py
+from celery.signals import worker_process_init, worker_process_shutdown
+import sqlite3
+from sqlite3 import Error
+
+db_conn = None
+
+@worker_process_init.connect
+def init_worker(**kwargs):
+    global db_conn
+    try:
+        db_conn = sqlite3.connect('sqlite.db')
+    except Error as e:
+        db_conn = None
+
+@worker_process_shutdown.connect
+def shutdown_worker(**kwargs):
+    global db_conn
+    if db_conn:
+        db_conn.close()
+```
+
+`celery worker --app=worker.app --loglevel=INFO --concurrency=10`로 worker를 실행하면,
+로그에 10개의 프로세스가 각각 DB 컨넥션을 생성했다는 것을 확인할 수가 있다.
+
+## Task 시작 전 DB 컨넥션 설정
+
+이 설정은 딱히 프로세스/쓰레드 구분이 필요없으며, 정의된 task마다 DB 컨넥션을 지정할 수 있다.
+[참고](https://docs.celeryproject.org/en/latest/userguide/tasks.html#instantiation)
+
+문제점은 이런 방식으로 했을 때 DB 컨넥션을 닫는 방법을 아직 모른다는 것..
+
+예시 코드:
+
+```python
+# worker.py
+# 밑에 코드 추가
+from celery import Task
+import sqlite3
+
+class DatabaseTask(Task):
+    _db = None
+
+    @property
+    def db(self):
+        if self._db is None:
+            self._db = sqlite3.connect('sqlite.db')
+            print('DB 연결이 되었습니다.')
+        return self._db
+```
+
+```python
+# tasks.py
+from worker import DatabaseTask
+
+@app.task(base=DatabaseTask)
+def db_call():
+    c = db_call.db.cursor()
+    c.execute('SELECT 210 + 210;')
+```
+
+`celery worker --app=worker.app --loglevel=INFO --pool=gevent --concurrency=1000`로 worker를 실행하고,
+`group(db_call.s() for x in range(10))()`로 task 요청을 보내면 첫 번째 task에 `DB 연결이 되었습니다`라고 로그가 찍히는게 보이고,
+그 후로 나머지 task에는 따로 DB 연결을 하는 작업이 실행되지 않는 것을 확인할 수가 있다.
+
 # 참고사항
 
 TODO
 1. Flower 연동
-2. DB 연결 (worker 초기 설정) 방안 [참고](https://docs.celeryproject.org/en/latest/userguide/tasks.html#instantiation)
+2. DB 연결 (worker 초기 설정) 방안 
