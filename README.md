@@ -562,6 +562,63 @@ def db_call():
 `group(db_call.s() for x in range(10))()`로 task 요청을 보내면 첫 번째 task에 `DB 연결이 되었습니다`라고 로그가 찍히는게 보이고,
 그 후로 나머지 task에는 따로 DB 연결을 하는 작업이 실행되지 않는 것을 확인할 수가 있다.
 
+# Multi-threading에 대한 노트
+
+저자가 알고 있는 것;
+
+- Multi-threading은 I/O 관련 task에 적절하다.
+- Multi-threading을 사용한 경우, worker의 메인 프로세스를 제외한 child process가 생성되지 않는다.
+  (다른 말로, 프로세스는 단 한개만 사용된다.)
+
+저자가 알고 싶은 것;
+
+- 하나의 process에 몇 개의 thread가 생성될 수 있는가?
+  - 이는 CPU 자원에 따라 변동이 되는 사항인가?
+    (CPU core 2개를 할당받은 프로세스는 CPU core 1개를 할당받은 프로세스보다 더 많은 thread를 사용할 수 있는가?)
+- Thread의 속도에 영향을 미치는 것은 어떤 요소가 있는가?
+- Thread 개수에 따른 Diminishing Return이 있을 수가 있는가?
+  (아무리 thread가 많아도 결국 broker의 성능에 종속되어 결국 성능에 제한이 생기는가?)
+- Celery worker가 여럿 있으면 multi-threading의 성능이 좋아지는 이유는 왜인가?
+  (이 부분은 밑에 __스피드 테스트__ 부분을 참고할 것)
+
+## 스피드 테스트
+
+여러 테스트 케이스를 두고 CPU 자원, Worker 개수, Thread 개수를 변경하며 테스트 해본다.
+
+### 테스트 case 1 : DB 쿼리
+
+`Select 210 + 210;` 쿼리를 던지는 아주 간단한 task를 group기능으로 동시에 10,000건을 요청한다.
+
+테스트 설정:
+
+- broker는 rabbitmq (도커 컨테이너)로, CPU 자원에 대한 제한은 없다.
+- backend는 redis (도커 컨테이너)이지만, 따로 return되는 값은 없어 상관이 없을 듯 싶다.
+  마찬가지로 CPU 자원에 대한 제한은 없다.
+- DB 컨넥션 설정과 DB쿼리 코드는 [Task 시작 전 DB 컨넥션 설정](#Task 시작 전 DB 컨넥션 설정) 참고.
+
+테스트 시간 재는 방식은 cAdvisor CPU 자원 모니터링 그래프를 활용했다..
+
+테스트 코드:
+
+```python
+>>> from tasks import db_call
+>>> from celery import group
+>>> group(db_call.s() for x in range(10000))()
+```
+
+테스트 결과:
+
+- 1 CPU, 1 worker, 1000 threads = 42초
+- 1 CPU, 1 worker, 2000 threads = 42초
+- 2 CPU, 1 worker, 1000 threads = 22초
+- 2 CPU, 1 worker, 2000 threads = 22초
+- 2 CPU, 2 worker, 1000 threads = 21초
+- 3 CPU, 1 worker, 1000 threads = 21초
+- 3 CPU, 1 worker, 2000 threads = 21초
+- __3 CPU, 2 worker, 1000 threads = 13초__
+- 3 CPU, 2 worker, 2000 threads = 13초
+- 3 CPU, 3 worker, 1000 threads = 15초
+
 # 참고사항
 
 TODO
