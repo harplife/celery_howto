@@ -630,6 +630,35 @@ def db_call():
 - Client(1 CPU), Worker(2 CPU, 2 Worker, 1000 threads) = 10초
 - Client(1 CPU), Worker(2 CPU, 2 Worker, 1000 threads) = 12초
 
+# MySQL 연동
+
+SQLite 대신에 도커 컨테이너로 격리된 MySQL에 붙으면 어떻게 될지 궁금해 테스트 해봤다.
+
+도커 컨테이너 실행 명령어
+
+`docker run -it --name maria_dev --net celery_net -e MYSQL_ROOT_PASSWORD=1234 -e MYSQL_DATABASE=msg -e MYSQL_USER=msg -e MYSQL_PASSWORD=msg123 mariadb:kr`
+
+파이썬 mysql 컨넥터 설치
+
+`pip install mysql-connector-python`
+
+파이썬 mysql 연동 코드
+
+```python
+import mysql.connector as maria
+
+mydb = maria.connect(host='test_maria', user='msg', password='msg123', database='msg')
+mycursor = mydb.cursor()
+mycursor.execute('SELECT 210 + 210')
+myresult = mycursor.fetchall()
+myresult[0][0]  # 420
+```
+
+Worker & Tasks 설정은 위에 DB 컨넥션 부분 [참고](#task-시작-전-db-컨넥션-설정).
+
+SQLite 대신 MySQL로 테스트 case 1로 진행해보니,
+속도에는 인식될 정도의 차이가 없었다.
+
 # 참고사항
 
 TODO

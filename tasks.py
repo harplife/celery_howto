@@ -38,12 +38,15 @@ def db_call():
     print('db_call task is starting')
     try:
         c = db_call.db.cursor()
-    except:
+    except Exception as e:
         print('db_call connection failed')
+        print(e)
     else:
         print('db_call connection cursor is created')
     finally:
-        c.execute(f'SELECT 210 + 210;')
+        c.execute('SELECT 210 + 210;')
+        result = c.fetchall()
+        print(result)
         print('db_call select is executed')
 
 

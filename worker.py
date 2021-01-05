@@ -5,6 +5,7 @@ import time
 import sqlite3
 from sqlite3 import Error
 import requests
+import mysql.connector as maria
 
 
 app = Celery()
@@ -33,7 +34,13 @@ class DatabaseTask(Task):
     def db(self):
         if self._db is None:
             print('Databased connection is now initialized.')
-            self._db = sqlite3.connect('sqlite.db')
+            self._db = maria.connect(
+                host='test_maria',
+                user='msg',
+                password='msg123',
+                database='msg'
+            )
+            # self._db = sqlite3.connect('sqlite.db')
         return self._db
 
 
