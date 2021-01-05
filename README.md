@@ -612,6 +612,8 @@ def db_call():
 
 테스트 결과:
 
+#### Client와 Worker가 같은 컨테이너에 있는 경우
+
 - 1 CPU, 1 worker, 1000 threads = 42초
 - 1 CPU, 1 worker, 2000 threads = 42초
 - 2 CPU, 1 worker, 1000 threads = 22초
@@ -622,6 +624,11 @@ def db_call():
 - __3 CPU, 2 worker, 1000 threads = 13초__
 - 3 CPU, 2 worker, 2000 threads = 13초
 - 3 CPU, 3 worker, 1000 threads = 15초
+
+#### Client와 Worker가 각각의 컨테이너에 있는 경우
+
+- Client(1 CPU), Worker(2 CPU, 2 Worker, 1000 threads) = 10초
+- Client(1 CPU), Worker(2 CPU, 2 Worker, 1000 threads) = 12초
 
 # 참고사항
 
