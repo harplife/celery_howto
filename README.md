@@ -113,11 +113,15 @@ Celery worker 실행은
 
 Celery 설정은
 
-1. 터미널 command에서 가능하지만, 파일 내애서도 설정이 가능하다. \[[관련 문서](https://docs.celeryproject.org/en/latest/getting-started/first-steps-with-celery.html#configuration)\]
+1. 터미널 command에서 가능하지만, 파일 내에서도 설정이 가능하다. \[[관련 문서](https://docs.celeryproject.org/en/latest/getting-started/first-steps-with-celery.html#configuration)\]
 2. 기본 설정으론 celery는 multi-processing으로 구현되며, 프로세스 개수는 CPU core 수대로 자동으로 맞춘다.
 3. 실행 명령어에 `--pool=gevent`를 추가하면 multi-threading으로 구현된다.
 4. 실행 명령어에 `--concurrency=숫자`를 추가하면 Celery가 사용할 process/thread 개수를 숫자만큼 정할 수 있다.
    참고로, I/O task 분량이 많은 경우 thread가 제일 적절하며, CPU 활용량이 높은 task들은 process가 적절하다.
+5. 실행 명령어에 `--hostname=worker이름@%h`를 추가하면 worker의 이름이 지정되어 다른 worker들과 구분이 가능하다.
+   그말인즉슨, 여러 worker를 실행하려면 이 argument는 무조건 넣어줘야 한다. 이는 `queues`와 마찬가지다.
+6. 실행 명령어에 `--queues=이름`을 추가함으로서 worker가 담당하는 queue를 지정할 수 있다.
+   이 부분에 대해선 밑에 섹션 '[라우팅](#라우팅(Intermediate))'을 참고.
 
 ## Task 요청
 
