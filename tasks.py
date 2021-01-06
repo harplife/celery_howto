@@ -33,19 +33,21 @@ def test(self, n):
     print(f'Task {n} is now awake!')
 
 
-@app.task(base=DatabaseTask)
-def db_call():
+@app.task(bind=True, base=DatabaseTask)
+def db_call(self):
     print('db_call task is starting')
     try:
-        c = db_call.db.cursor()
-    except Exception as e:
+        cnx = self.db
+        cursor = cnx.cursor()
+    except Exception as exc:
         print('db_call connection failed')
-        print(e)
+        cnx.ping(reconnect=True, attempts=1, delay=0)
+        raise self.retry(exc=exc, countdown=1, max_retries=2)
     else:
         print('db_call connection cursor is created')
     finally:
-        c.execute('SELECT 210 + 210;')
-        result = c.fetchall()
+        cursor.execute('SELECT 210 + 210;')
+        result = cursor.fetchall()
         print(result)
         print('db_call select is executed')
 

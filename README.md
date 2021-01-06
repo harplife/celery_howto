@@ -659,6 +659,18 @@ Worker & Tasks 설정은 위에 DB 컨넥션 부분 [참고](#task-시작-전-db
 SQLite 대신 MySQL로 테스트 case 1로 진행해보니,
 속도에는 인식될 정도의 차이가 없었다.
 
+## 에러 발생시
+
+아직 stale connection에 대한 처리가 완료되지 않았다.
+
+일단 임의로 cursor가 만드는데 exception이 뜨면 ping을 던지는 동시에 reconnect를 구현하게 코딩을 했으나,
+아직 테스트 해본적이 없으니 제대로 될지는 모르겠다.
+여기에 더불어 task도 retry 설정을 했는데 이 또한 테스트 해봐야 한다.
+
+mysql connector ping에 대한 문서 [참고](https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlconnection-ping.html)
+
+celery retry에 대한 문서 [참고](https://docs.celeryproject.org/en/stable/userguide/tasks.html#retrying)
+
 # 참고사항
 
 TODO
