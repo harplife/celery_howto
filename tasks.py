@@ -4,6 +4,7 @@ import time
 import sqlite3
 from sqlite3 import Error
 import requests
+from mysql.connector.errors import OperationalError
 
 
 @app.task
@@ -36,16 +37,16 @@ def test(self, n):
 @app.task(bind=True, base=DatabaseTask)
 def db_call(self):
     print('db_call task is starting')
+    cnx = self.db
     try:
-        cnx = self.db
         cursor = cnx.cursor()
-    except Exception as exc:
-        print('db_call connection failed')
-        cnx.ping(reconnect=True, attempts=1, delay=0)
+    except OperationalError as exc:
+        print('db_call connection failed. Attempting to reconnect.')
+        # cnx.ping(reconnect=True, attempts=1, delay=0)
+        cnx.reconnect(attempts=1, delay=0)
         raise self.retry(exc=exc, countdown=1, max_retries=2)
     else:
         print('db_call connection cursor is created')
-    finally:
         cursor.execute('SELECT 210 + 210;')
         result = cursor.fetchall()
         print(result)

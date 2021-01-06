@@ -667,7 +667,7 @@ SQLite 대신 MySQL로 테스트 case 1로 진행해보니,
 아직 테스트 해본적이 없으니 제대로 될지는 모르겠다.
 여기에 더불어 task도 retry 설정을 했는데 이 또한 테스트 해봐야 한다.
 
-mysql connector ping에 대한 문서 [참고](https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlconnection-ping.html)
+mysql connector reconnect에 대한 문서 [참고](https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlconnection-reconnect.html)
 
 celery retry에 대한 문서 [참고](https://docs.celeryproject.org/en/stable/userguide/tasks.html#retrying)
 
