@@ -49,9 +49,9 @@ def db_call(self):
     except OperationalError as exc:
         print('db_call connection failed. Attempting to reconnect.')
         # cnx.ping(reconnect=True, attempts=1, delay=0)
-        cnx.reconnect(attempts=1, delay=1)
+        cnx.reconnect(attempts=1, delay=0)
         print('db reconnected')
-        raise self.retry(exc=exc, countdown=1, max_retries=2)
+        raise self.retry(exc=exc, countdown=3, max_retries=3)
     else:
         print('db_call connection cursor is created')
         cursor.execute('SELECT 210 + 210;')
