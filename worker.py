@@ -17,7 +17,6 @@ app.conf.update(
                 'tasks'
                 ),
             'task_routes': {
-                    'test': {'queue':'simple'},
                     'web_test': {'queue':'restapi'}
                 },
             'task_serializer': 'json',

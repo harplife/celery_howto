@@ -28,13 +28,19 @@ def subtract(x, y):
 
 
 @app.task(bind=True, name='test')
-def test(self, n):
+def test(self, n, s):
     print(f'Task {n} shall sleep now.')
-    time.sleep(3)
+    time.sleep(s)
     print(f'Task {n} is now awake!')
 
 
-@app.task(bind=True, base=DatabaseTask)
+@app.task(ignore_result=True)
+def do_nothing():
+    # really does nothing
+    pass
+
+
+@app.task(bind=True, base=DatabaseTask, ignore_result=True)
 def db_call(self):
     print('db_call task is starting')
     cnx = self.db
