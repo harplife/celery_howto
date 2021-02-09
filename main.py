@@ -8,7 +8,6 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    time.sleep(3)
     return {'hello': 'world'}
 
 
