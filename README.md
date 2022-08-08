@@ -627,7 +627,7 @@ def db_call():
 
 #### Client와 Worker가 각각의 컨테이너에 있는 경우
 
-- Client(1 CPU), Worker(2 CPU, 2 Worker, 1000 threads) = 10초
+- Client(1 CPU), Worker(3 CPU, 3 Worker, 1000 threads) = 10초
 - Client(1 CPU), Worker(2 CPU, 2 Worker, 1000 threads) = 12초
 
 # MySQL 연동
